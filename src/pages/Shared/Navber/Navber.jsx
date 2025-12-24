@@ -1,8 +1,16 @@
 import React from "react";
 import Logo from "../../../component/Logo";
-import { NavLink } from "react-router";
+import { Link, NavLink } from "react-router";
+import useAuth from "../../../hooks/useAuth";
 
 const Navber = () => {
+  const { user } = useAuth();
+  const { logoutuser } = useAuth();
+
+  const handelLogout = () => {
+    logoutuser();
+  };
+
   const links = (
     <>
       <NavLink className=" mr-2" to={"/services"}>
@@ -61,7 +69,19 @@ const Navber = () => {
         <ul className="menu menu-horizontal px-1">{links} </ul>
       </div>
       <div className="navbar-end">
-        <a className="btn">Button</a>
+        {user ? (
+          <a onClick={handelLogout} className="btn">
+            Sign Out
+          </a>
+        ) : (
+          <Link to={"/login"} className="btn">
+            Login{" "}
+          </Link>
+        )}
+
+        <Link to={"/rider"} className="btn btn-primary text-black">
+          Be a Rider
+        </Link>
       </div>
     </div>
   );
