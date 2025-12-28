@@ -34,6 +34,13 @@ const Navber = () => {
       <NavLink className=" mr-2" to={"/send-parcel"}>
         Send Parcel
       </NavLink>
+      {user && (
+        <>
+          <NavLink className=" mr-2" to={"/dashboard/my-parcels"}>
+            My Parcels
+          </NavLink>
+        </>
+      )}
     </>
   );
   return (

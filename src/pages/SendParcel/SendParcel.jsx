@@ -1,15 +1,23 @@
 import React from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { useLoaderData } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import Swal from "sweetalert2";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
+import useAuth from "../../hooks/useAuth";
 
 const SendParcel = () => {
   const {
     register,
     handleSubmit,
     control,
-    formState: { errors },
+    // formState: { errors },
   } = useForm();
+
+  const { user } = useAuth();
+
+  const axiosSecure = useAxiosSecure();
+
+  const navigate = useNavigate();
   const serviceCenter = useLoaderData();
   const regionDuplicate = serviceCenter.map((c) => c.region);
   const regions = [...new Set(regionDuplicate)];
@@ -45,6 +53,7 @@ const SendParcel = () => {
       }
     }
     console.log(cost);
+    data.cost = cost;
 
     Swal.fire({
       title: "Agree with the Cost?",
@@ -56,12 +65,22 @@ const SendParcel = () => {
       confirmButtonText: "Yes, take it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        // Swal.fire({
-        //   title: "Deleted!",
-        //   text: "Your file has been deleted.",
-        //   icon: "success",
-        // });
-        console.log(data);
+        //save the parcel info to the database
+
+        axiosSecure.post("/parcels", data).then((res) => {
+          console.log("after saving parcels", res.data);
+
+          if (res.data.insertedId) {
+            navigate("/dashboard/my-parcels");
+            Swal.fire({
+              position: "top-end",
+              icon: "success",
+              title: "Parcel has created. Please pay",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          }
+        });
       }
     });
   };
@@ -124,6 +143,7 @@ const SendParcel = () => {
               type="text"
               className="input w-full"
               placeholder="Sender Name"
+              defaultValue={user?.displayName}
               {...register("senderName")}
             />{" "}
             {/* sender email */}
@@ -132,6 +152,7 @@ const SendParcel = () => {
               type="email"
               className="input w-full"
               placeholder="Sender Email"
+              defaultValue={user?.email}
               {...register("senderEmail")}
             />{" "}
             {/**sender region */}
@@ -142,7 +163,7 @@ const SendParcel = () => {
                 defaultValue="Pick a browser"
                 className="select"
               >
-                <option disabled={true}>Pick a region</option>
+                <option>Pick a region</option>
                 {regions.map((r, i) => (
                   <option key={i}>{r}</option>
                 ))}
@@ -198,7 +219,7 @@ const SendParcel = () => {
                 defaultValue="Pick a Region"
                 className="select"
               >
-                <option disabled={true}>Pick a region</option>
+                <option disabled={false}>Pick a region</option>
                 {regions.map((r, i) => (
                   <option key={i}>{r}</option>
                 ))}
